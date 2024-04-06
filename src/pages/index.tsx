@@ -1,8 +1,15 @@
+import { formatAmount } from '@did-network/dapp-sdk'
+import { useAccount, useBalance } from 'wagmi'
+
 import { Header } from '@/components/layout/Header'
 
 const Home = () => {
-  const [tokenPair, setTokenPair] = useState(['eth', 'usdt'])
+  const { address } = useAccount()
+  const { data: balance } = useBalance({
+    address,
+  })
 
+  const [tokenPair, setTokenPair] = useState(['eth', 'usdt'])
   const reverseTokenPair = useCallback(() => {
     setTokenPair([tokenPair[1], tokenPair[0]])
   }, [tokenPair])
@@ -45,7 +52,7 @@ const Home = () => {
               <span>${inAmount}</span>
               <span>
                 <span>Balance: </span>
-                <span className="">{inBalance}</span>
+                <span className="">{formatAmount(balance?.value, balance?.decimals)}</span>
                 <span>Max</span>
               </span>
             </div>
