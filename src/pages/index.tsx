@@ -50,7 +50,7 @@ const Home = () => {
           </div>
         </div>
 
-        <button className="mt-1 block w-full h-15 rounded-lg bg-#f9f9f9 active:bg-accent transition-all text-2xl font-600 text-gray-4">
+        <button className="mt-1 w-full h-15 flex-col-center rounded-lg bg-#f9f9f9 active:bg-accent transition-all text-2xl font-600 text-gray-4">
           Swap
         </button>
       </div>
