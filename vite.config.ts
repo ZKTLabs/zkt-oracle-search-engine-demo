@@ -49,13 +49,11 @@ export default defineConfig(({ mode }) => {
             componentPrefix: 'Icon',
           }),
         ],
+        dirs: ['./src/components/ui'],
       }),
       EslintPlugin(),
       Analyze(),
       nodePolyfills(),
-      // legacy({
-      //   targets: ['defaults', 'not IE 11'],
-      // }),
     ],
     build: {
       rollupOptions: {
