@@ -79,6 +79,9 @@ devDependencies:
   '@iconify-json/carbon':
     specifier: ^1.1.14
     version: 1.1.14
+  '@iconify-json/cryptocurrency-color':
+    specifier: ^1.1.7
+    version: 1.1.7
   '@iconify-json/line-md':
     specifier: ^1.1.24
     version: 1.1.24
@@ -3373,6 +3376,12 @@ packages:
 
   /@iconify-json/carbon@1.1.14:
     resolution: {integrity: sha512-Md5Vh3x2ALI5shFHlqZQBpEBk0coZf8bcFqzZBqf3bZuUTDg78y9vkwhQ+0PF1Q3wmZIfwkSJU9Pf6V228pXxw==}
+    dependencies:
+      '@iconify/types': 2.0.0
+    dev: true
+
+  /@iconify-json/cryptocurrency-color@1.1.7:
+    resolution: {integrity: sha512-UUHR7bRt5FTpZOMLXAo8VUiTleM/VAg8rUiAfg5nPaEyuoV/9NDThMQ2T5JTCnI+CnN7EOMWo62bYGGelU1hKQ==}
     dependencies:
       '@iconify/types': 2.0.0
     dev: true
