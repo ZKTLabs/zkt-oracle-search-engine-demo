@@ -64,12 +64,11 @@ const Home = () => {
   const approveMu = useWriteContract()
   const approveHandler = useCallback(async () => {
     await approveMu.writeContractAsync({
-      abi: usdtContract.abi,
-      address: usdtContract.address as `0x${string}`,
+      ...(tokenPair[0] === 'usdt' ? usdtContract : usdcContract),
       functionName: 'approve',
       args: [ZKTUniswapV4Hook, BigInt(BigNumber(2).pow(256).minus(1).toString())],
     })
-  }, [approveMu, usdtContract])
+  }, [approveMu, tokenPair, usdcContract, usdtContract])
 
   const onSwap = useCallback(() => {
     writeContract({
