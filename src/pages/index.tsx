@@ -1,29 +1,87 @@
 import { formatAmount } from '@did-network/dapp-sdk'
-import { useAccount, useBalance } from 'wagmi'
+import BigNumber from 'bignumber.js'
+import { parseEther } from 'viem'
+import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 
 import { Header } from '@/components/layout/Header'
+import { useTokenContract } from '@/hooks'
+
+import abi from '../abi/PoolSwapTest.json'
+
+const MockTokenA = '0x520A3474beAaE4AC406242aa74eF6D052dE8aaED'
+const MockTokenB = '0x6BCCF17873Fe200962451E6824090b847DB1ACEb'
+const PoolSwapTest = '0x92d3117268Bd580a748acbEE73162834443a3A17'
+const ZKTUniswapV4Hook = '0x020951DEDa6928a0Eb297ed5e6a4132A01d800DD'
 
 const Home = () => {
   const { address } = useAccount()
-  const { data: balance } = useBalance({
-    address,
-  })
+  const { data: hash, writeContract, isPending, error } = useWriteContract()
 
-  const [tokenPair, setTokenPair] = useState(['eth', 'usdt'])
+  const [tokenPair, setTokenPair] = useState(['usdt', 'usdc'])
   const reverseTokenPair = useCallback(() => {
     setTokenPair([tokenPair[1], tokenPair[0]])
   }, [tokenPair])
 
   const [inAmount, setInAmount] = useState('')
-  const [outAmount, setOutAmount] = useState('')
+  const outAmount = inAmount
+  const usdcContract = useTokenContract(MockTokenA)
+  const usdtContract = useTokenContract(MockTokenB)
 
-  const [inBalance, setInBalance] = useState('')
-  const [outBalance, setOutBalance] = useState('')
+  const { data: usdcBalance } = useReadContract({
+    ...(usdcContract as any),
+    functionName: 'balances',
+    args: [address],
+  })
 
-  const btnError = useMemo(() => {
-    if (!inAmount) return true
-    return false
-  }, [inAmount])
+  const { data: usdtBalance } = useReadContract({
+    ...(usdtContract as any),
+    functionName: 'balances',
+    args: [address],
+  })
+
+  const approveMu = useWriteContract()
+  const approveHandler = useCallback(async () => {
+    await approveMu.writeContractAsync({
+      abi: usdtContract.abi,
+      address: usdtContract.address as any,
+      functionName: 'approve',
+      args: [ZKTUniswapV4Hook, BigInt(BigNumber(2).pow(256).minus(1).toString())],
+    })
+  }, [approveMu, usdtContract])
+
+  const onSwap = useCallback(() => {
+    writeContract({
+      address: PoolSwapTest,
+      abi,
+      functionName: 'swap',
+      args: [
+        {
+          currency0: MockTokenA,
+          currency1: MockTokenB,
+          fee: 3000,
+          tickSpacing: 60,
+          hooks: ZKTUniswapV4Hook,
+        },
+        {
+          zeroForOne: true,
+          amountSpecified: parseEther('0.1'),
+          sqrtPriceLimitX96: '7922816251426433759354395033',
+        },
+        {
+          withdrawTokens: true, // 允许转移token
+          settleUsingTransfer: true, // 使用转账结算
+          currencyAlreadySent: false, // 货币已经发送了
+        },
+        '0x0',
+      ],
+    })
+  }, [writeContract])
+
+  const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
+    hash,
+  })
+
+  console.log(isConfirmed, isConfirming, isPending, error)
 
   return (
     <>
@@ -43,7 +101,7 @@ const Home = () => {
                 onChange={(e) => setInAmount(e.target.value)}
               />
               <div className="p-1 px-1.5 shadow-sm flex-center gap-1 bg-white rounded-full cursor-pointer">
-                <span className="shrink-0 w-6 h-6 i-cryptocurrency-color:eth"></span>
+                <span className="shrink-0 w-6 h-6 i-cryptocurrency-color:usdc"></span>
                 <span className="font-600 text-xl uppercase">{tokenPair[0]}</span>
                 <span className="w-5 h-5 i-lucide-chevron-down"></span>
               </div>
@@ -52,8 +110,7 @@ const Home = () => {
               <span>${inAmount}</span>
               <span>
                 <span>Balance: </span>
-                <span className="">{formatAmount(balance?.value, balance?.decimals)}</span>
-                <span>Max</span>
+                <span className="">{formatAmount(usdcBalance, 18)}</span>
               </span>
             </div>
           </div>
@@ -69,10 +126,10 @@ const Home = () => {
             <div className="text-sm text-gray-5 font-500">You receive</div>
             <div className="flex justify-between">
               <Input
+                disabled={true}
                 placeholder="0"
                 className="p-0 text-3xl border-none font-600 !shadow-[none] outline-none bg-transparent"
                 value={outAmount}
-                onChange={(e) => setOutAmount(e.target.value)}
               />
 
               <div className="p-1 px-1.5 shadow-sm flex-center gap-1 bg-white rounded-full cursor-pointer">
@@ -82,18 +139,18 @@ const Home = () => {
               </div>
             </div>
             <div className="flex items-center justify-between text-sm text-gray-5 font-500">
-              <span>${outAmount}</span>
+              <span>${formatAmount(outAmount)}</span>
               <span>
                 <span>Balance: </span>
-                <span className="">{outBalance}</span>
-                <span>Max</span>
+                <span className="">{formatAmount(usdtBalance, 18)}</span>
               </span>
             </div>
           </div>
         </div>
 
         <button
-          disabled={btnError}
+          onClick={onSwap}
+          disabled={!inAmount}
           className="mt-1 w-full h-14 flex-col-center rounded-lg transition-all text-5 font-600 text-white bg-primary active:bg-primary/80 disabled:bg-#f9f9f9 disabled:text-gray-4"
         >
           Swap

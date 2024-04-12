@@ -1,3 +1,4 @@
+import { erc20Abi } from 'viem'
 import { useAccount } from 'wagmi'
 import { goerli, mainnet } from 'wagmi/chains'
 
@@ -25,4 +26,9 @@ export const useWagmiContractAddress = () => {
       }[chain.id]),
     [chain]
   )
+}
+
+export const useTokenContract = (address: string) => {
+  const { chainId } = useAccount()
+  return useMemo(() => ({ address, abi: erc20Abi }), [address])
 }

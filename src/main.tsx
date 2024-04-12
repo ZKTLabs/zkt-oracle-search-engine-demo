@@ -3,7 +3,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { WagmiProvider } from 'wagmi'
-import { arbitrum, base, mainnet, optimism, polygon, zora } from 'wagmi/chains'
+import { sepolia } from 'wagmi/chains'
 
 import App from './App'
 
@@ -15,8 +15,8 @@ import 'uno.css'
 const config = getDefaultConfig({
   appName: 'zkt-swap-hook',
   projectId: 'zkt-swap-hook',
-  chains: [mainnet, polygon, optimism, arbitrum, base, zora],
-  ssr: false, // If your dApp uses server side rendering (SSR)
+  chains: [sepolia],
+  ssr: false,
 })
 
 const queryClient = new QueryClient()
