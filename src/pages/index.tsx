@@ -1,7 +1,14 @@
 import { formatAmount } from '@did-network/dapp-sdk'
 import BigNumber from 'bignumber.js'
 import { parseEther } from 'viem'
-import { useAccount, useReadContract, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
+import {
+  useAccount,
+  useBalance,
+  useBlockNumber,
+  useReadContract,
+  useWaitForTransactionReceipt,
+  useWriteContract,
+} from 'wagmi'
 
 import { Header } from '@/components/layout/Header'
 import { useTokenContract } from '@/hooks'
@@ -15,6 +22,9 @@ const ZKTUniswapV4Hook = '0x020951DEDa6928a0Eb297ed5e6a4132A01d800DD'
 
 const Home = () => {
   const { address } = useAccount()
+  const { data: blockNumber } = useBlockNumber({
+    watch: true,
+  })
   const { data: hash, writeContract, isPending, error } = useWriteContract()
 
   const [tokenPair, setTokenPair] = useState(['usdt', 'usdc'])
@@ -27,23 +37,35 @@ const Home = () => {
   const usdcContract = useTokenContract(MockTokenA)
   const usdtContract = useTokenContract(MockTokenB)
 
-  const { data: usdcBalance } = useReadContract({
-    ...(usdcContract as any),
-    functionName: 'balances',
-    args: [address],
+  const { data: usdcBalance, refetch: usdcBalanceRefetch } = useBalance({
+    address,
+    token: MockTokenA,
   })
-
-  const { data: usdtBalance } = useReadContract({
-    ...(usdtContract as any),
-    functionName: 'balances',
-    args: [address],
+  const { data: usdtBalance, refetch: usdtBalanceRefetch } = useBalance({
+    address,
+    token: MockTokenB,
   })
+  const { data: usdtAllowanceData, refetch: usdtRefetch } = useReadContract({
+    ...usdtContract,
+    functionName: 'allowance',
+    args: [address!, ZKTUniswapV4Hook!],
+  })
+  const { data: usdcAllowanceData, refetch: usdcRefetch } = useReadContract({
+    ...usdcContract,
+    functionName: 'allowance',
+    args: [address!, ZKTUniswapV4Hook!],
+  })
+  const allowance = useMemo(
+    () => (tokenPair[0] === 'usdt' ? usdtAllowanceData : usdcAllowanceData),
+    [tokenPair, usdtAllowanceData, usdcAllowanceData]
+  )
+  const isApproved = useMemo(() => typeof allowance !== 'undefined' && allowance > 0, [allowance])
 
   const approveMu = useWriteContract()
   const approveHandler = useCallback(async () => {
     await approveMu.writeContractAsync({
       abi: usdtContract.abi,
-      address: usdtContract.address as any,
+      address: usdtContract.address as `0x${string}`,
       functionName: 'approve',
       args: [ZKTUniswapV4Hook, BigInt(BigNumber(2).pow(256).minus(1).toString())],
     })
@@ -81,14 +103,31 @@ const Home = () => {
     hash,
   })
 
-  console.log(isConfirmed, isConfirming, isPending, error)
+  useEffect(() => {
+    console.log('[blockNumber]', blockNumber)
+    usdcRefetch()
+    usdtRefetch()
+    usdcBalanceRefetch()
+    usdtBalanceRefetch()
+  }, [blockNumber, usdcBalanceRefetch, usdcRefetch, usdtBalanceRefetch, usdtRefetch])
+
+  console.log(approveMu.isPending, isConfirmed, isConfirming, isPending, error)
+
+  const clickHandler = useCallback(async () => {
+    if (!isApproved) {
+      await approveHandler()
+    } else {
+      onSwap()
+    }
+  }, [approveHandler, isApproved, onSwap])
 
   return (
     <>
       <Header />
       <div className="max-w-xl mx-auto mt-10 sm:px-8 lt-sm:px-4 font-$rk-fonts-body">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4 justify-between">
           <span className="py-1.5 px-4 flex-col-center bg-border/50 rounded-full font-600 cursor-pointer">Swap</span>
+          {isConfirming && <span className="i-lucide:loader-circle w-5 h-5 text-gray-5 animate-spin"></span>}
         </div>
         <div className="relative mt-5 space-y-1">
           <div className="px-4 py-4 space-y-2 rounded-lg border-transparent [&:has(input:focus)]:border-border border-1px border-solid bg-#f9f9f9">
@@ -107,10 +146,10 @@ const Home = () => {
               </div>
             </div>
             <div className="flex items-center justify-between text-sm text-gray-5 font-500">
-              <span>${inAmount}</span>
+              <span>${formatAmount(inAmount)}</span>
               <span>
                 <span>Balance: </span>
-                <span className="">{formatAmount(usdcBalance, 18)}</span>
+                <span className="">{formatAmount(usdcBalance?.value, usdcBalance?.decimals)}</span>
               </span>
             </div>
           </div>
@@ -142,18 +181,21 @@ const Home = () => {
               <span>${formatAmount(outAmount)}</span>
               <span>
                 <span>Balance: </span>
-                <span className="">{formatAmount(usdtBalance, 18)}</span>
+                <span className="">{formatAmount(usdtBalance?.value, usdtBalance?.decimals)}</span>
               </span>
             </div>
           </div>
         </div>
 
         <button
-          onClick={onSwap}
-          disabled={!inAmount}
-          className="mt-1 w-full h-14 flex-col-center rounded-lg transition-all text-5 font-600 text-white bg-primary active:bg-primary/80 disabled:bg-#f9f9f9 disabled:text-gray-4"
+          onClick={clickHandler}
+          disabled={!inAmount || approveMu.isPending || isConfirming || isPending}
+          className="mt-1 w-full h-14 flex-center gap-1 rounded-lg transition-all text-5 font-600 text-white bg-primary active:bg-primary/80 disabled:bg-primary/50"
         >
-          Swap
+          {(approveMu.isPending || isPending) && (
+            <span className="i-lucide:loader-circle w-5 h-5 text-white animate-spin"></span>
+          )}
+          {isApproved ? 'Swap' : 'Approve'}
         </button>
       </div>
     </>

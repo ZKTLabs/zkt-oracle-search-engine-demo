@@ -28,7 +28,7 @@ export const useWagmiContractAddress = () => {
   )
 }
 
-export const useTokenContract = (address: string) => {
+export const useTokenContract = (address: `0x${string}`) => {
   const { chainId } = useAccount()
   return useMemo(() => ({ address, abi: erc20Abi }), [address])
 }

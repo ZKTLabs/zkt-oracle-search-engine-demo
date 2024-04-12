@@ -39,7 +39,7 @@
     "@iconify-json/cryptocurrency-color": "^1.1.7",
     "@iconify-json/line-md": "^1.1.24",
     "@iconify-json/logos": "^1.1.25",
-    "@iconify-json/lucide": "^1.1.83",
+    "@iconify-json/lucide": "^1.1.181",
     "@svgr/core": "^6.5.1",
     "@types/node": "^18.15.11",
     "@types/react": "^18.0.27",
