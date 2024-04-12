@@ -25,7 +25,7 @@ const Home = () => {
   const { data: blockNumber } = useBlockNumber({
     watch: true,
   })
-  const { data: hash, writeContract, isPending, error } = useWriteContract()
+  const { data: hash, writeContractAsync, isPending, error } = useWriteContract()
 
   const [tokenPair, setTokenPair] = useState(['usdt', 'usdc'])
   const reverseTokenPair = useCallback(() => {
@@ -70,8 +70,8 @@ const Home = () => {
     })
   }, [approveMu, tokenPair, usdcContract, usdtContract])
 
-  const onSwap = useCallback(() => {
-    writeContract({
+  const onSwap = useCallback(async () => {
+    await writeContractAsync({
       address: PoolSwapTest,
       abi,
       functionName: 'swap',
@@ -95,8 +95,9 @@ const Home = () => {
         },
         '0x0',
       ],
+      value: 0n,
     })
-  }, [writeContract])
+  }, [writeContractAsync])
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
@@ -109,8 +110,6 @@ const Home = () => {
     usdcBalanceRefetch()
     usdtBalanceRefetch()
   }, [blockNumber, usdcBalanceRefetch, usdcRefetch, usdtBalanceRefetch, usdtRefetch])
-
-  console.log(approveMu.isPending, isConfirmed, isConfirming, isPending, error)
 
   const clickHandler = useCallback(async () => {
     if (!isApproved) {
