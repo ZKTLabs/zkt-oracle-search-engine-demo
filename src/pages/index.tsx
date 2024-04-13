@@ -47,7 +47,7 @@ const Home = () => {
       functionName: 'swap',
       args: [
         [zeroAddress, MockTokenB, 50000, 60, ZKTUniswapV4Hook],
-        [true, parseEther('200'), '17715778550986650090239814974724'],
+        [true, parseEther('200'), '429512873900'],
         [true, true, false],
         '0x',
       ],
