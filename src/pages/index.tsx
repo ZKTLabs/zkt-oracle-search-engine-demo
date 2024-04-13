@@ -15,6 +15,8 @@ import { useTokenContract } from '@/hooks'
 
 import abi from '../abi/PoolSwapTest.json'
 
+console.log(abi)
+
 const MockTokenA = '0x520A3474beAaE4AC406242aa74eF6D052dE8aaED'
 const MockTokenB = '0x6BCCF17873Fe200962451E6824090b847DB1ACEb'
 const PoolSwapTest = '0x92d3117268Bd580a748acbEE73162834443a3A17'
@@ -76,23 +78,9 @@ const Home = () => {
       abi,
       functionName: 'swap',
       args: [
-        {
-          currency0: MockTokenA,
-          currency1: MockTokenB,
-          fee: 3000,
-          tickSpacing: 60,
-          hooks: ZKTUniswapV4Hook,
-        },
-        {
-          zeroForOne: true,
-          amountSpecified: parseEther('0.1'),
-          sqrtPriceLimitX96: '7922816251426433759354395033',
-        },
-        {
-          withdrawTokens: true, // 允许转移token
-          settleUsingTransfer: true, // 使用转账结算
-          currencyAlreadySent: false, // 货币已经发送了
-        },
+        [MockTokenA, MockTokenB, 3000, 60, ZKTUniswapV4Hook],
+        [true, parseEther('0.1'), '7922816251426433759354395033'],
+        [true, true, false],
         '0x',
       ],
       value: 0n,
