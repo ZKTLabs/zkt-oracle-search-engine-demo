@@ -15,7 +15,7 @@ import { useTokenContract } from '@/hooks'
 
 import abi from '../abi/PoolSwapTest.json'
 
-console.log(abi)
+const MAX_ALLOWANCE = BigInt(BigNumber(2).pow(256).minus(1).toString())
 
 const MockTokenA = '0x520A3474beAaE4AC406242aa74eF6D052dE8aaED'
 const MockTokenB = '0x6BCCF17873Fe200962451E6824090b847DB1ACEb'
@@ -58,19 +58,22 @@ const Home = () => {
     args: [address!, ZKTUniswapV4Hook!],
   })
   const allowance = useMemo(
-    () => (tokenPair[0] === 'usdt' ? usdtAllowanceData : usdcAllowanceData),
+    () => (tokenPair[0] === 'usdt' ? usdtAllowanceData : usdcAllowanceData) ?? 0n,
     [tokenPair, usdtAllowanceData, usdcAllowanceData]
   )
   const isApproved = useMemo(() => typeof allowance !== 'undefined' && allowance > 0, [allowance])
 
   const approveMu = useWriteContract()
-  const approveHandler = useCallback(async () => {
-    await approveMu.writeContractAsync({
-      ...(tokenPair[0] === 'usdt' ? usdtContract : usdcContract),
-      functionName: 'approve',
-      args: [ZKTUniswapV4Hook, BigInt(BigNumber(2).pow(256).minus(1).toString())],
-    })
-  }, [approveMu, tokenPair, usdcContract, usdtContract])
+  const approveHandler = useCallback(
+    async (maxAmount = MAX_ALLOWANCE) => {
+      await approveMu.writeContractAsync({
+        ...(tokenPair[0] === 'usdt' ? usdtContract : usdcContract),
+        functionName: 'approve',
+        args: [ZKTUniswapV4Hook, maxAmount],
+      })
+    },
+    [approveMu, tokenPair, usdcContract, usdtContract]
+  )
 
   const onSwap = useCallback(async () => {
     await writeContractAsync({
@@ -79,18 +82,18 @@ const Home = () => {
       functionName: 'swap',
       args: [
         [MockTokenA, MockTokenB, 3000, 60, ZKTUniswapV4Hook],
-        [true, parseEther('0.1'), '7922816251426433759354395033'],
+        [true, parseEther(inAmount), '7922816251426433759354395033'],
         [true, true, false],
         '0x',
       ],
       value: 0n,
     })
-  }, [writeContractAsync])
+  }, [inAmount, writeContractAsync])
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   })
-  console.log(parseEther('0.1'))
+  console.log(isConfirming, isConfirmed, hash, error)
 
   useEffect(() => {
     console.log('[blockNumber]', blockNumber)
@@ -101,12 +104,11 @@ const Home = () => {
   }, [blockNumber, usdcBalanceRefetch, usdcRefetch, usdtBalanceRefetch, usdtRefetch])
 
   const clickHandler = useCallback(async () => {
-    if (!isApproved) {
-      await approveHandler()
-    } else {
-      onSwap()
+    if (!isApproved || allowance < parseEther(inAmount)) {
+      await approveHandler(isApproved ? allowance + parseEther(inAmount) : MAX_ALLOWANCE)
     }
-  }, [approveHandler, isApproved, onSwap])
+    await onSwap()
+  }, [allowance, approveHandler, inAmount, isApproved, onSwap])
 
   return (
     <>
@@ -179,7 +181,7 @@ const Home = () => {
           disabled={!inAmount || approveMu.isPending || isConfirming || isPending}
           className="mt-1 w-full h-14 flex-center gap-1 rounded-lg transition-all text-5 font-600 text-white bg-primary active:bg-primary/80 disabled:bg-primary/50"
         >
-          {(approveMu.isPending || isPending) && (
+          {(approveMu.isPending || isPending || isConfirming) && (
             <span className="i-lucide:loader-circle w-5 h-5 text-white animate-spin"></span>
           )}
           {isApproved ? 'Swap' : 'Approve'}
