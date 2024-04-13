@@ -1,4 +1,5 @@
 import { formatAmount } from '@did-network/dapp-sdk'
+import { useConnectModal } from '@rainbow-me/rainbowkit'
 import BigNumber from 'bignumber.js'
 import { parseEther, zeroAddress } from 'viem'
 import { useAccount, useBalance, useBlockNumber, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
@@ -12,10 +13,11 @@ const PoolSwapTest = '0x92d3117268Bd580a748acbEE73162834443a3A17'
 const ZKTUniswapV4Hook = '0x020951DEDa6928a0Eb297ed5e6a4132A01d800DD'
 
 const Home = () => {
-  const { address } = useAccount()
+  const { address, isConnected } = useAccount()
   const { data: blockNumber } = useBlockNumber({
     watch: true,
   })
+  const { openConnectModal } = useConnectModal()
   const { data: hash, writeContractAsync, isPending, error } = useWriteContract()
 
   const [tokenPair, setTokenPair] = useState(['eth', 'usdt'])
@@ -23,7 +25,7 @@ const Home = () => {
     setTokenPair([tokenPair[1], tokenPair[0]])
   }, [tokenPair])
 
-  const [inAmount, setInAmount] = useState('')
+  const [inAmount, setInAmount] = useState('0.01')
   const outAmount = useMemo(
     () =>
       BigNumber(inAmount || 0)
@@ -67,8 +69,13 @@ const Home = () => {
   }, [blockNumber, usdcBalanceRefetch, usdtBalanceRefetch])
 
   const clickHandler = useCallback(async () => {
+    if (!isConnected) {
+      openConnectModal?.()
+
+      return
+    }
     await onSwap()
-  }, [onSwap])
+  }, [isConnected, onSwap, openConnectModal])
 
   const btnDisabled = useMemo(() => !inAmount || isConfirming || isPending, [inAmount, isConfirming, isPending])
 
@@ -89,6 +96,7 @@ const Home = () => {
                 className="p-0 text-3xl border-none font-600 !shadow-[none] outline-none bg-transparent"
                 value={inAmount}
                 onChange={(e) => setInAmount(e.target.value)}
+                readOnly
               />
               <div className="p-1 px-1.5 shadow-sm flex-center gap-1 bg-white rounded-full cursor-pointer">
                 <span className="shrink-0 w-6 h-6 i-cryptocurrency-color:eth"></span>
@@ -147,7 +155,7 @@ const Home = () => {
           {(isPending || isConfirming) && (
             <span className="i-lucide:loader-circle w-5 h-5 text-white animate-spin"></span>
           )}
-          Swap
+          {!isConnected ? 'Connect' : 'Swap'}
         </button>
       </div>
     </>

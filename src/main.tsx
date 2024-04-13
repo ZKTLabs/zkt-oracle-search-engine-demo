@@ -1,4 +1,4 @@
-import { getDefaultConfig, RainbowKitProvider } from '@rainbow-me/rainbowkit'
+import { getDefaultConfig, lightTheme, RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
@@ -55,7 +55,7 @@ const root = createRoot(document.getElementById('root')!)
 root.render(
   <WagmiProvider config={config}>
     <QueryClientProvider client={queryClient}>
-      <RainbowKitProvider>
+      <RainbowKitProvider locale="en-US" theme={lightTheme({ accentColor: '#7c3aed', borderRadius: 'medium' })}>
         <BrowserRouter>
           <App />
         </BrowserRouter>
