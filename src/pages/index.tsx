@@ -93,7 +93,7 @@ const Home = () => {
           settleUsingTransfer: true, // 使用转账结算
           currencyAlreadySent: false, // 货币已经发送了
         },
-        '0x0',
+        '0x',
       ],
       value: 0n,
     })
@@ -102,6 +102,7 @@ const Home = () => {
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
   })
+  console.log(parseEther('0.1'))
 
   useEffect(() => {
     console.log('[blockNumber]', blockNumber)
