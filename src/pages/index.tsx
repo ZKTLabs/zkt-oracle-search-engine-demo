@@ -51,9 +51,9 @@ const Home = () => {
         [true, true, false],
         '0x',
       ],
-      value: parseEther('0.01'),
+      value: parseEther(inAmount),
     })
-  }, [writeContractAsync])
+  }, [inAmount, writeContractAsync])
 
   const { isLoading: isConfirming, isSuccess: isConfirmed } = useWaitForTransactionReceipt({
     hash,
