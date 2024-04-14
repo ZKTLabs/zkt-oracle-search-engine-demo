@@ -175,9 +175,16 @@ const Home = () => {
         </button>
       </div>
 
-      <div className="mt-10 max-w-5xl mx-auto sm:px-8 lt-sm:px-4 text-lg font-bold">Code demo</div>
-      <div className="mt-4 mb-20 max-w-5xl mx-auto sm:px-8 lt-sm:px-4 [&>div]:px-5">
-        <CopyBlock text={frontEndCode} language="tsx" wrapLongLines theme={dracula} />
+      <div className="mt-10 max-w-6xl mx-auto sm:px-8 lt-sm:px-4 text-lg font-bold">Code demo</div>
+      <div className="mt-4 mb-20 max-w-6xl mx-auto sm:px-8 lt-sm:px-4 [&>div]:px-5 [&>div]:overflow-auto overflow-auto text-sm">
+        <CopyBlock
+          text={frontEndCode}
+          language="sol"
+          wrapLongLines
+          theme={dracula}
+          showLineNumbers
+          highlight="3,9, 20-44"
+        />
       </div>
       <Toaster richColors position="top-right" />
     </>

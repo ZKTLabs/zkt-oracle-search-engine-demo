@@ -1,5 +1,4 @@
-export const frontEndCode = `
-pragma solidity ^0.8.4;
+export const frontEndCode = `pragma solidity ^0.8.4;
 
 import {ComplianceAggregator} from "@zktnetwork/v0.2/abstract/ComplianceAggregator.sol";
 import {BaseHook} from "v4-periphery/BaseHook.sol";
@@ -42,5 +41,4 @@ contract ZKTUniswapV4Hook is BaseHook, ComplianceAggregator  {
         beforeSwapCounter += 1;
         return BaseHook.beforeSwap.selector;
     }
-}
-`
+}`
