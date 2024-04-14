@@ -1,10 +1,13 @@
 import { formatAmount } from '@did-network/dapp-sdk'
 import { useConnectModal } from '@rainbow-me/rainbowkit'
 import BigNumber from 'bignumber.js'
+import { CopyBlock, dracula } from 'react-code-blocks'
+import { toast, Toaster } from 'sonner'
 import { parseEther, zeroAddress } from 'viem'
 import { useAccount, useBalance, useBlockNumber, useWaitForTransactionReceipt, useWriteContract } from 'wagmi'
 
 import { Header } from '@/components/layout/Header'
+import { frontEndCode } from '@/constants/code'
 
 import abi from '../abi/PoolSwapTest.json'
 
@@ -19,6 +22,7 @@ const Home = () => {
   })
   const { openConnectModal } = useConnectModal()
   const { data: hash, writeContractAsync, isPending, error } = useWriteContract()
+  const [isBlack, setIsBlack] = useState(false)
 
   const [tokenPair, setTokenPair] = useState(['eth', 'usdt'])
   const reverseTokenPair = useCallback(() => {
@@ -71,11 +75,15 @@ const Home = () => {
   const clickHandler = useCallback(async () => {
     if (!isConnected) {
       openConnectModal?.()
-
       return
     }
+    if (isBlack) {
+      toast.error(
+        'Error: Access Denied. Your address has been identified as a blacklisted address and cannot access this protocol.'
+      )
+    }
     await onSwap()
-  }, [isConnected, onSwap, openConnectModal])
+  }, [isBlack, isConnected, onSwap, openConnectModal])
 
   const btnDisabled = useMemo(() => !inAmount || isConfirming || isPending, [inAmount, isConfirming, isPending])
 
@@ -158,6 +166,12 @@ const Home = () => {
           {!isConnected ? 'Connect' : 'Swap'}
         </button>
       </div>
+
+      <div className="mt-10 max-w-5xl mx-auto sm:px-8 lt-sm:px-4 text-lg font-bold">Code demo</div>
+      <div className="mt-4 mb-20 max-w-5xl mx-auto sm:px-8 lt-sm:px-4 [&>div]:px-5">
+        <CopyBlock text={frontEndCode} language="tsx" wrapLongLines theme={dracula} />
+      </div>
+      <Toaster richColors position="top-right" />
     </>
   )
 }
