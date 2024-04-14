@@ -183,7 +183,7 @@ const Home = () => {
           wrapLongLines
           theme={dracula}
           showLineNumbers
-          highlight="3,9, 20-44"
+          highlight="3,13-18,35-43"
         />
       </div>
       <Toaster richColors position="top-right" />
