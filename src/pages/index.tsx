@@ -21,8 +21,20 @@ const Home = () => {
     watch: true,
   })
   const { openConnectModal } = useConnectModal()
-  const { data: hash, writeContractAsync, isPending, error } = useWriteContract()
-  const [isBlack, setIsBlack] = useState(false)
+  const {
+    data: hash,
+    writeContractAsync,
+    isPending,
+    error,
+  } = useWriteContract({
+    mutation: {
+      onError() {
+        toast.error(
+          'Error: Access Denied. Your address has been identified as a blacklisted address and cannot access this protocol.'
+        )
+      },
+    },
+  })
 
   const [tokenPair, setTokenPair] = useState(['eth', 'usdt'])
   const reverseTokenPair = useCallback(() => {
@@ -77,13 +89,9 @@ const Home = () => {
       openConnectModal?.()
       return
     }
-    if (isBlack) {
-      toast.error(
-        'Error: Access Denied. Your address has been identified as a blacklisted address and cannot access this protocol.'
-      )
-    }
+
     await onSwap()
-  }, [isBlack, isConnected, onSwap, openConnectModal])
+  }, [isConnected, onSwap, openConnectModal])
 
   const btnDisabled = useMemo(() => !inAmount || isConfirming || isPending, [inAmount, isConfirming, isPending])
 
