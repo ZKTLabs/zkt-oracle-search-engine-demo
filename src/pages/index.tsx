@@ -179,11 +179,11 @@ const Home = () => {
       <div className="mt-4 mb-20 max-w-6xl mx-auto sm:px-8 lt-sm:px-4 [&>div]:px-5 [&>div]:overflow-auto overflow-auto text-sm">
         <CopyBlock
           text={frontEndCode}
-          language="sol"
+          language="go"
           wrapLongLines
           theme={dracula}
           showLineNumbers
-          highlight="3,13-18,35-43"
+          highlight="3,15,38"
         />
       </div>
       <Toaster richColors position="top-right" />
