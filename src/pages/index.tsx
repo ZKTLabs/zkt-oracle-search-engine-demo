@@ -91,7 +91,7 @@ const Home = () => {
             {isBlack ? (
               <JsonViewer data={searchMu.data ?? {}} />
             ) : (
-              <div className="text-center text-gray-5 font-bold"> This address is not in the blacklist</div>
+              <div className="text-center text-gray-5 font-bold"> This address is not in the blacklist.</div>
             )}
           </div>
         )}
