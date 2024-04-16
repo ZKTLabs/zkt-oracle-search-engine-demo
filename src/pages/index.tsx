@@ -4,6 +4,7 @@ import { toast, Toaster } from 'sonner'
 import { ENGINE_ABI } from '@/abi/zkt'
 import { Header } from '@/components/layout/Header'
 import { JsonViewer } from '@/components/layout/JsonViewer'
+import { cn } from '@/lib/utils'
 import { readDataFromContract } from '@/utils/viem'
 
 const ENGINE_ADDRESS = '0xFfE315080888256671d88639D2F14064946bea5f' as const
@@ -11,6 +12,7 @@ const ENGINE_ADDRESS = '0xFfE315080888256671d88639D2F14064946bea5f' as const
 const Home = () => {
   const [address, setAddress] = useState('')
   const [isBlack, setIsBlack] = useState<boolean>()
+  const [loading, setLoading] = useState(false)
   const searchMu = useMutation({
     mutationKey: [address],
     mutationFn: async (search: string) => {
@@ -27,20 +29,29 @@ const Home = () => {
 
     if (searchMu.isPending) return
 
+    if (loading) return
+
     setIsBlack(undefined)
+    setLoading(true)
 
     try {
       const res = (await readDataFromContract(ENGINE_ADDRESS, ENGINE_ABI, 'isBlacklist', [
         address,
       ])) as unknown as boolean
       setIsBlack(res)
-      if (res === false) return
+      if (res === false) {
+        setLoading(false)
+        return
+      }
     } catch (error: any) {
       toast.error(error)
+      setLoading(false)
+      return
     }
 
     await searchMu.mutateAsync(address)
-  }, [address, searchMu])
+    setLoading(false)
+  }, [address, loading, searchMu])
 
   return (
     <>
@@ -64,8 +75,15 @@ const Home = () => {
               </SelectGroup>
             </SelectContent>
           </Select>
-          <div className="h-10 px-3 flex-col-center bg-primary cursor-pointer" onClick={searchHandler}>
-            <span className="w-5 h-5 text-white i-lucide-search"></span>
+          <div
+            className={cn('h-10 px-3 flex-col-center bg-primary cursor-pointer', loading && 'bg-primary/70')}
+            onClick={searchHandler}
+          >
+            {loading ? (
+              <span className="w-4 h-4 text-white animate-spin i-lucide:loader-circle"></span>
+            ) : (
+              <span className="w-4 h-4 text-white i-lucide-search"></span>
+            )}
           </div>
         </div>
         {typeof isBlack === 'boolean' && (
