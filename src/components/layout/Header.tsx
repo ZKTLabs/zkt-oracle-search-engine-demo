@@ -1,4 +1,4 @@
-import { ConnectButton } from '@rainbow-me/rainbowkit'
+// import { ConnectButton } from '@rainbow-me/rainbowkit'
 import { ReactNode } from 'react'
 
 import Zkt from '~icons/zkt-icons/zkt'
@@ -9,10 +9,10 @@ export const Header = ({ action }: { action?: ReactNode }) => {
       <div className="container m-auto h-full flex justify-between items-center sm:px-8 lt-sm:px-4">
         <div className="flex-center gap-2">
           <Zkt className="w-8 h-8" />
-          <span className="capitalize text-xl font-600">swap hook</span>
+          <span className="capitalize text-xl font-600">Compliant Oracle Search</span>
         </div>
 
-        <ConnectButton />
+        {/* <ConnectButton /> */}
       </div>
     </div>
   )
