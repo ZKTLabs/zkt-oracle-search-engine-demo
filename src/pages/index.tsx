@@ -7,7 +7,7 @@ import { JsonViewer } from '@/components/layout/JsonViewer'
 import { cn } from '@/lib/utils'
 import { readDataFromContract } from '@/utils/viem'
 
-const ENGINE_ADDRESS = '0x2cAAf7927fc378B18639ca259d5bc8d22Acd333d' as const
+const ENGINE_ADDRESS = '0x63FceB2A96029eFdA6446eBCE4f24edF00C158E2' as const
 
 const Home = () => {
   const [address, setAddress] = useState('')
